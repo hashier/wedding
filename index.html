@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You're invited (maybe)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Design tokens
+     Italy (majolica cobalt, lemon, olive, lime plaster) set in Bodoni (Parma)
+     and Jost (after Futura, Germany). The one loud element is the tile band. */
+  :root {
+    --cobalt: #1f3c88;
+    --cobalt-deep: #16295e;
+    --lemon: #f2c14e;
+    --olive: #6b7a4b;
+    --plaster: #eef0eb;
+    --paper: #fdfdfb;
+    --ink: #1c2333;
+    --muted: #5d6474;
+    --line: #d9ddd6;
+    --tint: #e6ebf5;
+    --serif: "Bodoni Moda", "Didot", Georgia, serif;
+    --sans: "Jost", "Futura", system-ui, sans-serif;
+    /* Banner: a hand-written SVG tile with two flowers, repeated sideways.
+       Left flower is Germany, read top to bottom: black, red, gold.
+       Right flower is Italy, read left to right: green, white (outlined), red.
+       Corner circles are neutral sand so they don't compete with the flags. */
+    --banner-red: #d0342c;
+    --tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='56' viewBox='0 0 112 56'%3E%3Crect width='112' height='56' fill='%23fdfdfb'/%3E%3Cg fill='%23ebe5d5'%3E%3Ccircle cx='0' cy='0' r='11'/%3E%3Ccircle cx='0' cy='56' r='11'/%3E%3Ccircle cx='56' cy='0' r='11'/%3E%3Ccircle cx='56' cy='56' r='11'/%3E%3Ccircle cx='112' cy='0' r='11'/%3E%3Ccircle cx='112' cy='56' r='11'/%3E%3C/g%3E%3Cpath fill='%232b2b2b' d='M28 9c5 7 5 12 0 17c-5-5-5-10 0-17z'/%3E%3Cpath fill='%23d0342c' d='M9 28c7-5 12-5 17 0c-5 5-10 5-17 0zM47 28c-7 5-12 5-17 0c5-5 10-5 17 0z'/%3E%3Cpath fill='%23f2c230' d='M28 47c-5-7-5-12 0-17c5 5 5 10 0 17z'/%3E%3Cg transform='translate(56 0)'%3E%3Cpath fill='%232f8a55' d='M9 28c7-5 12-5 17 0c-5 5-10 5-17 0z'/%3E%3Cpath fill='%23fff' stroke='%23c9c9c0' stroke-width='1' d='M28 9c5 7 5 12 0 17c-5-5-5-10 0-17zM28 47c-5-7-5-12 0-17c5 5 5 10 0 17z'/%3E%3Cpath fill='%23d0342c' d='M47 28c-7 5-12 5-17 0c5-5 10-5 17 0z'/%3E%3C/g%3E%3Cg fill='%23d9d3c3'%3E%3Ccircle cx='28' cy='28' r='2.5'/%3E%3Ccircle cx='84' cy='28' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--plaster); color: var(--ink);
+    font: 400 17px/1.55 var(--sans);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 24px;
+  }
+  body::before, body::after {
+    content: ""; display: block; height: 56px; margin: 0 -24px; width: calc(100% + 48px);
+    background: var(--tile) repeat-x center / 112px 56px;
+    border-bottom: 2px solid var(--banner-red);
+  }
+  body::after { margin-top: auto; border-bottom: 0; border-top: 2px solid var(--banner-red); }
+  :focus-visible { outline: 3px solid var(--lemon); outline-offset: 3px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 500; color: var(--cobalt-deep); }
+
+  .site-head { text-align: center; padding: 26px 0 6px; }
+  .site-head .mono { font-family: var(--serif); font-size: 28px; color: var(--cobalt-deep); }
+  .site-head .where { font-size: 15px; color: var(--muted); margin-top: 2px; }
+  .langs { position: absolute; top: 72px; right: 24px; display: flex; gap: 2px; z-index: 10; }
+  @media (max-width: 700px) { .langs { position: static; justify-content: center; margin-top: 14px; } }
+  .langs button {
+    background: none; border: 0; cursor: pointer; padding: 4px 8px; border-radius: 4px;
+    font: 500 14px var(--sans); color: var(--muted);
+  }
+  .langs button.on { color: var(--paper); background: var(--cobalt); }
+  /* First screen: a large picker in the card replaces the small corner switcher */
+  .on-ask .langs { display: none; }
+  .lang-pick { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 8px; border-radius: 999px; background: var(--tint); }
+  .lang-pick button {
+    background: none; border: 0; cursor: pointer; border-radius: 999px; padding: 8px 18px;
+    font: 500 16px var(--sans); color: var(--cobalt-deep);
+  }
+  .lang-pick button:hover { background: rgba(31, 60, 136, .12); }
+  .lang-pick button.on { background: var(--cobalt); color: #fff; }
+  #app { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 24px 0 48px; }
+
+  /* Quiz cards */
+  .card {
+    position: relative; width: 100%; max-width: 520px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 6px;
+    box-shadow: 0 30px 60px -30px rgba(22, 41, 94, .35);
+    padding: 44px 40px; text-align: center;
+    animation: rise .4s ease;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .card.split { max-width: 1040px; display: grid; gap: 56px; align-items: center; }
+  .split .media { display: flex; justify-content: center; }
+  @media (min-width: 820px) {
+    .card.split { grid-template-columns: 1fr 1.15fr; padding: 56px 64px; text-align: left; }
+    .split .photo { width: 100%; max-width: 400px; height: auto; aspect-ratio: 1; transform: rotate(-2deg); border-width: 12px; border-bottom-width: 40px; border-radius: 2px; font-size: 130px; }
+    .split h1 { font-size: 56px; }
+    .split h2 { font-size: 38px; }
+    .split .progress, .split .options { justify-content: flex-start; }
+  }
+  @media (max-width: 819px) { .card.split { gap: 8px; padding: 36px 24px; } }
+  .back {
+    position: absolute; top: 14px; left: 16px;
+    background: none; border: 0; padding: 4px; cursor: pointer;
+    font: 400 14px var(--sans); color: var(--muted);
+  }
+  .back:hover { color: var(--cobalt); }
+  .eyebrow { font-size: 15px; color: var(--muted); margin-bottom: 10px; }
+  .photo {
+    width: 160px; height: 160px; object-fit: cover;
+    border: 6px solid #fff; border-radius: 2px;
+    box-shadow: 0 8px 24px rgba(22, 41, 94, .18);
+    background: var(--tint);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 64px;
+  }
+  h1 { font-size: 40px; line-height: 1.1; margin: 16px 0 24px; }
+  h2 { font-size: 30px; line-height: 1.15; margin: 16px 0 24px; }
+  .btn {
+    font: 500 16px var(--sans); letter-spacing: .02em;
+    border: 0; border-radius: 999px; padding: 12px 30px; cursor: pointer;
+    background: var(--cobalt); color: #fff;
+    transition: background .15s;
+  }
+  .btn:hover { background: var(--cobalt-deep); }
+  .btn.ghost { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .yesno { position: relative; height: 110px; }
+  .yesno .btn { width: 112px; }
+  .yesno .yes { position: absolute; left: calc(50% - 120px); top: 32px; }
+  .yesno .no { position: absolute; left: calc(50% + 8px); top: 32px; }
+  @media (min-width: 820px) {
+    .yesno .yes { left: 0; }
+    .yesno .no { left: 128px; }
+  }
+  .no.loose { position: absolute; z-index: 3; transition: left .25s ease, top .25s ease; }
+  .progress { display: flex; justify-content: center; gap: 6px; }
+  .progress span { width: 26px; height: 4px; border-radius: 2px; background: var(--line); }
+  .progress span.on { background: var(--lemon); }
+  .options { display: grid; gap: 10px; }
+  .option {
+    font: 400 17px var(--sans); text-align: left;
+    background: #fff; border: 1.5px solid var(--line); border-radius: 6px;
+    padding: 13px 16px; cursor: pointer; color: var(--ink);
+    transition: border-color .15s, background .15s;
+  }
+  .option:hover { border-color: var(--cobalt); background: var(--tint); }
+  .nope { font-family: var(--serif); font-style: italic; font-size: 21px; color: var(--muted); margin: -8px 0 24px; }
+  .passed h1 { font-size: 64px; margin: 20px 0 4px; }
+  .passed .sub { font-family: var(--serif); font-style: italic; font-size: 24px; margin-bottom: 20px; }
+  .badge { display: inline-block; font-size: 14px; color: var(--cobalt-deep); background: var(--lemon); border-radius: 999px; padding: 5px 14px; }
+  .arrow { display: block; margin: 36px auto 0; font-size: 26px; color: var(--cobalt); background: none; border: 0; cursor: pointer; animation: bob 1.6s infinite; }
+  @keyframes bob { 50% { transform: translateY(6px); } }
+  .skip {
+    display: inline-block; margin: 10px 0 0; padding: 0; background: none; border: 0; cursor: pointer;
+    font: 400 15px var(--sans); color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .skip:hover { color: var(--cobalt); }
+
+  /* Info page */
+  .info-page { width: 100%; max-width: 1040px; display: flex; flex-direction: column; gap: 8px; }
+  .invite { max-width: none; text-align: left; }
+  .invite .names { font-family: var(--serif); color: var(--cobalt-deep); font-size: clamp(40px, 5vw, 64px); line-height: 1.05; margin: 0 0 18px; }
+  .invite .date { font-family: var(--serif); font-size: 26px; }
+  .invite .venue { font-family: var(--serif); font-size: 24px; margin: 6px 0 0; }
+  .invite .small { color: var(--muted); }
+  .invite .note { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); margin-top: 22px; padding-left: 16px; border-left: 3px solid var(--lemon); }
+  .invite .big-photo { width: 100%; max-width: 420px; aspect-ratio: 4/5; object-fit: cover; border: 12px solid #fff; border-bottom-width: 40px; transform: rotate(1.5deg); box-shadow: 0 8px 24px rgba(22, 41, 94, .18); }
+  .invite .skip { margin-top: 26px; }
+  .info-nav {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; gap: 4px 6px; justify-content: center;
+    background: var(--plaster); padding: 14px 0; margin-top: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .info-nav a { font-size: 15px; color: var(--ink); text-decoration: none; padding: 4px 12px; border-radius: 999px; }
+  .info-nav a:hover { background: var(--cobalt); color: #fff; }
+  /* On phones the menu wraps onto several rows, so it stops being sticky:
+     pinned, those rows would cover the top of every section. */
+  @media (max-width: 700px) {
+    .info-nav { position: static; padding: 12px 0; }
+    .info-nav a { padding: 4px 8px; }
+  }
+  .info-section {
+    display: grid; gap: 8px 48px; padding: 44px 0; border-bottom: 1px solid var(--line);
+    scroll-margin-top: 70px;
+  }
+  @media (min-width: 900px) { .info-section { grid-template-columns: 240px 1fr; } }
+  .info-section h2 { font-size: 34px; margin: 0; }
+  .info-section > :not(h2) { max-width: 68ch; }
+  /* Side-by-side content (travel, countries) needs the full width: heading above it */
+  .info-section.is-wide { grid-template-columns: 1fr; gap: 20px; }
+  .info-section.is-wide > :not(h2) { max-width: none; }
+  /* The info page's hero already shows the names */
+  .on-info .site-head .mono { display: none; }
+  .info-section h3 { font-size: 22px; margin: 0 0 6px; }
+  .info-section p { margin: 0 0 12px; }
+  .info-section a { color: var(--cobalt); }
+  .soon { color: var(--muted); font-family: var(--serif); font-style: italic; font-size: 19px; }
+  .event { margin-bottom: 22px; }
+  .when { font-size: 15px; color: var(--olive); font-weight: 500; }
+  .meta { font-size: 15px; color: var(--muted); }
+  .travel { display: grid; gap: 24px; }
+  @media (min-width: 700px) { .travel { grid-template-columns: repeat(3, 1fr); } }
+  details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  details:first-child { padding-top: 0; }
+  summary { cursor: pointer; font-family: var(--serif); font-size: 21px; color: var(--cobalt-deep); }
+  details p { margin: 8px 0 0; }
+
+  /* RSVP form */
+  .rsvp { display: grid; gap: 16px; max-width: 560px; }
+  .rsvp label { display: grid; gap: 6px; font-size: 15px; color: var(--muted); }
+  .rsvp input, .rsvp textarea {
+    font: 400 17px var(--sans); color: var(--ink);
+    background: #fff; border: 1.5px solid var(--line); border-radius: 6px; padding: 10px 12px;
+  }
+  .rsvp input:focus, .rsvp textarea:focus { outline: none; border-color: var(--cobalt); }
+  .rsvp fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  .rsvp legend { font-size: 15px; color: var(--muted); margin-bottom: 6px; width: 100%; }
+  .rsvp .choice { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--ink); cursor: pointer; }
+  .rsvp .choice input { accent-color: var(--cobalt); width: 18px; height: 18px; }
+  .rsvp .btn { justify-self: start; margin-top: 4px; }
+  .rsvp .btn:disabled { opacity: .6; cursor: wait; }
+  .rsvp .hp { position: absolute; left: -9999px; }
+  .form-status { color: var(--cobalt); font-size: 15px; margin: 0; min-height: 1em; }
+  .req { color: var(--banner-red); font-weight: 500; }
+  .if-attending { display: grid; gap: 16px; }
+  .if-attending[hidden] { display: none; }
+  .rsvp input[type=number] { max-width: 120px; }
+  .req-note { font-size: 14px; color: var(--muted); margin: 0; }
+  .thanks { font-family: var(--serif); font-size: 26px; }
+
+  /* Three countries, side by side; each has a flag-colored top edge */
+  .countries { display: grid; gap: 20px; }
+  @media (min-width: 760px) { .countries { grid-template-columns: repeat(3, 1fr); } }
+  .country { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 22px 22px 18px; border-top: 10px solid var(--cobalt); }
+  .country:nth-child(1) { border-image: linear-gradient(90deg, #000 33%, #dd0000 33% 66%, #ffce00 66%) 1; border-image-width: 10px 0 0 0; }
+  .country:nth-child(2) { border-image: linear-gradient(90deg, #009246 33%, #fff 33% 66%, #ce2b37 66%) 1; border-image-width: 10px 0 0 0; }
+  .country:nth-child(3) { border-image: linear-gradient(90deg, #ba0c2f 40%, #fff 40% 46%, #00205b 46% 54%, #fff 54% 60%, #ba0c2f 60%) 1; border-image-width: 10px 0 0 0; }
+  .country h3 { font-size: 26px; margin-bottom: 4px; }
+  .country .label { font-size: 15px; font-weight: 500; color: var(--olive); margin: 16px 0 6px; }
+  .facts { margin: 0; padding-left: 18px; font-size: 15px; }
+  .facts li { margin-bottom: 8px; }
+  .phrases { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 15px; }
+  .phrases dt { font-family: var(--serif); font-size: 18px; color: var(--cobalt-deep); }
+  .phrases dd { margin: 0; color: var(--muted); align-self: center; }
+
+  /* Toast, video, effects */
+  .toast {
+    position: fixed; left: 50%; bottom: 12vh; transform: translateX(-50%); z-index: 40;
+    width: max-content; max-width: calc(100vw - 32px); text-align: center;
+    background: var(--cobalt-deep); color: #fff; padding: 18px 32px; border-radius: 18px;
+    border: 3px solid var(--lemon);
+    font: 500 22px/1.3 var(--sans); box-shadow: 0 18px 50px rgba(22, 41, 94, .45);
+    animation: toast 3.5s ease forwards;
+  }
+  @keyframes toast {
+    0% { opacity: 0; transform: translate(-50%, 16px) scale(.9); }
+    8% { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+    12%, 85% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    100% { opacity: 0; }
+  }
+  .egg-hint { max-width: 640px; text-align: center; font-size: 14px; color: var(--muted); margin: 8px auto 20px; padding: 0 8px; }
+  .video-modal {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(22, 41, 94, .8); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .video-box { position: relative; width: 100%; max-width: 800px; text-align: center; }
+  .video-box video { width: 100%; border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,.5); background: #000; }
+  .video-box p { color: #fff; font-family: var(--serif); font-size: 28px; margin: 16px 0 0; }
+  .video-close { position: absolute; top: -48px; right: 0; background: none; border: 0; cursor: pointer; color: #fff; font-size: 36px; line-height: 1; }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+  .confetti { position: fixed; top: -10px; width: 8px; height: 12px; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+    .confetti { display: none; }
+  }
+</style>
+</head>
+<body>
+<nav class="langs" id="langs" aria-label="Language"></nav>
+<header class="site-head">
+  <div class="mono" id="mono"></div>
+  <div class="where" id="where"></div>
+</header>
+<main id="app"></main>
+<footer class="egg-hint" id="egg-hint"></footer>
+
+<script>
+// ---- Edit everything here --------------------------------------------------
+// Any text can be one string (same in every language) or { en, de, it }.
+// A missing language falls back to English.
+// Photos: put a path or URL in `photo`; leave it empty to show the emoji instead.
+// Empty invitation fields are hidden; empty info sections show "Coming soon".
+// `wrong`: indexes (from 0) of the answers that fail; every other answer passes.
+// `nope`: optional extra line under "Wrong answer!".
+const CONFIG = {
+  couple: "Christopher & Federica",
+  date: { en: "September 2027", de: "September 2027", it: "settembre 2027" },
+  time: "",
+  venue: "",
+  city: { en: "Italy", de: "Italien", it: "Italia" },
+  dressCode: { en: "Semi-formal", de: "Semi-formal", it: "Semi-formale" },
+  note: "",           // optional line on the invitation card
+  coverPhoto: "photos/us-happy.jpg",   // shown on the "Want to come?" screen
+  invitePhoto: "photos/us-invite.jpg", // shown on the final invitation
+  wrongPhoto: "photos/fede-sad.jpg",   // shown on "Wrong answer!"
+  // "No" runs away this many times, then it can be clicked and plays the video.
+  noDodges: 3,
+  noDelay: 300,  // ms the cursor rests on "No" before it runs; a quick click wins
+  noVideo: "media/friendship-over.mp4",
+
+  // RSVP: the web app URL from deploying rsvp-apps-script.gs (see that file).
+  // While it is empty, the form shows a note instead of sending.
+  rsvpUrl: "https://script.google.com/macros/s/AKfycbzXsKGLXKvF6BHFrz6SA-quiN_249X9868KTY-zcXPqcHyEgmKbeMSJ2veMtDThSWKf/exec",
+  rsvpDeadline: "",    // e.g. { en: "Please reply by March 31, 2027.", de: "...", it: "..." }
+
+  info: {
+    welcome: "",
+    schedule: [
+      // { day: "Saturday, September 11", time: "16:00", title: "Ceremony", text: "", where: "", attire: "" },
+    ],
+    place: "",
+    travel: [
+      { from: { en: "From Germany", de: "Aus Deutschland", it: "Dalla Germania" }, text: "" },
+      { from: { en: "From Norway", de: "Aus Norwegen", it: "Dalla Norvegia" }, text: "" },
+      { from: { en: "From elsewhere", de: "Von woanders", it: "Da altrove" }, text: "" },
+    ],
+    stay: [
+      // { name: "Hotel ...", text: "", link: "https://..." },
+    ],
+    faq: [
+      {
+        q: { en: "Should we bring a gift?", de: "Sollen wir ein Geschenk mitbringen?", it: "Dobbiamo portare un regalo?" },
+        a: {
+          en: "No need for gifts: you coming all the way to Italy is the gift.",
+          de: "Ihr braucht nichts mitzubringen: Dass ihr bis nach Italien kommt, ist das Geschenk.",
+          it: "Nessun regalo: il fatto che veniate fino in Italia è già il regalo.",
+        },
+      },
+      {
+        q: { en: "Is there a dress code?", de: "Gibt es einen Dresscode?", it: "C'è un dress code?" },
+        a: { en: "Semi-formal.", de: "Semi-formal.", it: "Semi-formale." },
+      },
+      { q: { en: "When is the RSVP deadline?", de: "Bis wann sollen wir zusagen?", it: "Entro quando dobbiamo rispondere?" }, a: "" },
+      {
+        // September averages (1991–2020) from the climate tables on Wikipedia for
+        // Milan, Venice and Bologna: highs 24–26 °C, lows about 15 °C, 5–6 rainy days.
+        q: { en: "What will the weather be like?", de: "Wie wird das Wetter?", it: "Che tempo farà?" },
+        a: {
+          en: "Late summer: in September, days in northern Italy are usually around 24–26 °C and nights around 15 °C. A few rainy days are normal, so bring a light layer for the evening.",
+          de: "Spätsommer: Im September hat es in Norditalien tagsüber meist um die 24–26 °C, nachts um die 15 °C. Ein paar Regentage sind normal, also nehmt für den Abend eine leichte Jacke mit.",
+          it: "Fine estate: a settembre nel nord Italia di giorno ci sono di solito 24–26 °C e di notte circa 15 °C. Qualche giorno di pioggia è normale, quindi portate qualcosa di leggero per la sera.",
+        },
+      },
+      {
+        q: { en: "Are children welcome?", de: "Sind Kinder willkommen?", it: "I bambini sono i benvenuti?" },
+        a: { en: "Yes, children are very welcome!", de: "Ja, Kinder sind herzlich willkommen!", it: "Sì, i bambini sono i benvenuti!" },
+      },
+    ],
+
+    // Fun facts, checked against Wikipedia on 2026-11-25 (Johannes Gutenberg,
+    // Fanta, German cuisine, Espresso, List of World Heritage Sites in Italy,
+    // Pizza Margherita, Trafalgar Square Christmas tree, Cheese knife, Johan Vaaler).
+    countries: [
+      {
+        flag: "🇩🇪", name: { en: "Germany", de: "Deutschland", it: "Germania" },
+        facts: [
+          {
+            en: "Gutenberg's printing press was running in Mainz by 1450, and his famous Bible was finished in 1455.",
+            de: "Gutenbergs Druckerpresse lief um 1450 in Mainz, seine berühmte Bibel war 1455 fertig.",
+            it: "La stampa di Gutenberg era in funzione a Magonza già nel 1450, e la sua famosa Bibbia fu completata nel 1455.",
+          },
+          {
+            en: "Fanta was invented in Germany in 1940, when Coca-Cola's German branch could no longer import Coca-Cola syrup.",
+            de: "Fanta wurde 1940 in Deutschland erfunden, als Coca-Cola Deutschland keinen Coca-Cola-Sirup mehr importieren konnte.",
+            it: "La Fanta è nata in Germania nel 1940, quando la filiale tedesca della Coca-Cola non poteva più importare lo sciroppo.",
+          },
+          {
+            en: "Germany has around 3,000 types of bread. Christopher will tell you about every one of them.",
+            de: "Deutschland hat rund 3.000 Brotsorten. Christopher erzählt euch gern von jeder einzelnen.",
+            it: "La Germania ha circa 3.000 tipi di pane. Christopher ve li racconterà tutti.",
+          },
+        ],
+        phrases: [
+          ["Hallo!", { en: "Hello!", de: "Hallo!", it: "Ciao!" }],
+          ["Danke!", { en: "Thank you!", de: "Danke!", it: "Grazie!" }],
+          ["Prost!", { en: "Cheers!", de: "Prost!", it: "Cin cin!" }],
+          ["Herzlichen Glückwunsch!", { en: "Congratulations!", de: "Herzlichen Glückwunsch!", it: "Congratulazioni!" }],
+          ["Noch ein Bier, bitte.", { en: "One more beer, please.", de: "Noch ein Bier, bitte.", it: "Un'altra birra, per favore." }],        ],
+      },
+      {
+        flag: "🇮🇹", name: { en: "Italy", de: "Italien", it: "Italia" },
+        facts: [
+          {
+            en: "Angelo Moriondo from Turin patented a steam-powered coffee machine in 1884, an early ancestor of the espresso machine.",
+            de: "Angelo Moriondo aus Turin ließ 1884 eine dampfbetriebene Kaffeemaschine patentieren, einen frühen Vorfahren der Espressomaschine.",
+            it: "Nel 1884 il torinese Angelo Moriondo brevettò una macchina da caffè a vapore, antenata della macchina per l'espresso.",
+          },
+          {
+            en: "Italy has more UNESCO World Heritage Sites than any other country.",
+            de: "Italien hat mehr UNESCO-Welterbestätten als jedes andere Land.",
+            it: "L'Italia ha più siti patrimonio mondiale dell'UNESCO di qualsiasi altro paese.",
+          },
+          {
+            en: "Legend says pizza Margherita was named after Queen Margherita in 1889. Historians doubt it, but it's a good story.",
+            de: "Der Legende nach wurde die Pizza Margherita 1889 nach Königin Margherita benannt. Historiker zweifeln daran, aber die Geschichte ist gut.",
+            it: "Secondo la leggenda, nel 1889 la pizza Margherita prese il nome dalla regina Margherita. Gli storici ne dubitano, ma è una bella storia.",
+          },
+        ],
+        phrases: [
+          ["Ciao!", { en: "Hi! / Bye!", de: "Hallo! / Tschüss!", it: "Ciao!" }],
+          ["Grazie!", { en: "Thank you!", de: "Danke!", it: "Grazie!" }],
+          ["Cin cin!", { en: "Cheers!", de: "Prost!", it: "Cin cin!" }],
+          ["Auguri!", { en: "Best wishes!", de: "Alles Gute!", it: "Auguri!" }],
+          ["Viva gli sposi!", { en: "Long live the newlyweds!", de: "Hoch lebe das Brautpaar!", it: "Viva gli sposi!" }],        ],
+      },
+      {
+        flag: "🇳🇴", name: { en: "Norway", de: "Norwegen", it: "Norvegia" },
+        facts: [
+          {
+            en: "Since 1947, Oslo has given London the Christmas tree on Trafalgar Square every year, as thanks for British support in World War II.",
+            de: "Seit 1947 schenkt Oslo London jedes Jahr den Weihnachtsbaum am Trafalgar Square, als Dank für die britische Hilfe im Zweiten Weltkrieg.",
+            it: "Dal 1947 Oslo regala ogni anno a Londra l'albero di Natale di Trafalgar Square, per ringraziare del sostegno britannico nella Seconda guerra mondiale.",
+          },
+          {
+            en: "The cheese slicer was invented in Norway by Thor Bjørklund in 1925.",
+            de: "Der Käsehobel wurde 1925 in Norwegen von Thor Bjørklund erfunden.",
+            it: "L'affettaformaggio è stato inventato in Norvegia da Thor Bjørklund nel 1925.",
+          },
+          {
+            en: "Johan Vaaler is often called the inventor of the paper clip. He wasn't, but in World War II Norwegians wore paper clips as a sign of resistance.",
+            de: "Johan Vaaler gilt oft als Erfinder der Büroklammer. Das stimmt nicht, aber im Zweiten Weltkrieg trugen Norweger Büroklammern als Zeichen des Widerstands.",
+            it: "Johan Vaaler viene spesso indicato come l'inventore della graffetta. Non lo era, ma durante la Seconda guerra mondiale i norvegesi portavano graffette come simbolo di resistenza.",
+          },
+        ],
+        phrases: [
+          ["Hei!", { en: "Hi!", de: "Hallo!", it: "Ciao!" }],
+          ["Takk!", { en: "Thank you!", de: "Danke!", it: "Grazie!" }],
+          ["Skål!", { en: "Cheers!", de: "Prost!", it: "Cin cin!" }],
+          ["Gratulerer!", { en: "Congratulations!", de: "Glückwunsch!", it: "Congratulazioni!" }],
+          ["Takk for maten!", { en: "Thanks for the food!", de: "Danke für das Essen!", it: "Grazie per il cibo!" }],        ],
+      },
+    ],
+  },
+
+  questions: [
+    {
+      photo: "", emoji: "🤨", wrong: [2],
+      text: { en: "What color are you wearing? 👗", de: "Welche Farbe trägst du? 👗", it: "Di che colore ti vesti? 👗" },
+      options: {
+        en: ["Black. I know the rules.", "Whatever the bride tells me.", "White. With a little veil."],
+        de: ["Schwarz. Ich kenne die Regeln.", "Was auch immer die Braut sagt.", "Weiß. Mit kleinem Schleier."],
+        it: ["Nero. Conosco le regole.", "Quello che dice la sposa.", "Bianco. Con un piccolo velo."],
+      },
+      nope: {
+        en: "Only one person wears white. It's not you.",
+        de: "Nur eine trägt Weiß. Und das bist nicht du.",
+        it: "Solo una persona si veste di bianco. E non sei tu.",
+      },
+    },
+    {
+      photo: "", emoji: "🥰", wrong: [2],
+      text: { en: "What are you bringing? 🎁", de: "Was bringst du mit? 🎁", it: "Cosa porti? 🎁" },
+      options: {
+        en: ["Myself. The flight was the gift.", "Brunost, so the Italians finally understand.", "Complaints about flight prices."],
+        de: ["Mich selbst. Der Flug war das Geschenk.", "Brunost, damit die Italiener es endlich verstehen.", "Beschwerden über die Flugpreise."],
+        it: ["Me. Il volo era il regalo.", "Il brunost, così gli italiani finalmente capiscono.", "Lamentele sul prezzo dei voli."],
+      },
+      nope: {
+        en: "Keep those for the group chat.",
+        de: "Die bitte in den Gruppenchat.",
+        it: "Tienile per la chat di gruppo.",
+      },
+    },
+    {
+      photo: "", emoji: "🧐", wrong: [2],
+      text: {
+        en: "The ceremony starts at 16:00. When do you arrive? ⏰",
+        de: "Die Trauung beginnt um 16:00. Wann bist du da? ⏰",
+        it: "La cerimonia inizia alle 16:00. Quando arrivi? ⏰",
+      },
+      options: {
+        en: ["15:45. German time.", "16:20. Italian time.", "Just in time for the aperitivo."],
+        de: ["15:45. Deutsche Zeit.", "16:20. Italienische Zeit.", "Pünktlich zum Aperitivo."],
+        it: ["Alle 15:45. Orario tedesco.", "Alle 16:20. Orario italiano.", "Giusto in tempo per l'aperitivo."],
+      },
+      nope: {
+        en: "The aperitivo is earned, not skipped to.",
+        de: "Den Aperitivo muss man sich verdienen.",
+        it: "L'aperitivo bisogna guadagnarselo.",
+      },
+    },
+    {
+      photo: "", emoji: "🤌", wrong: [1],
+      text: { en: "It's after dinner. Coffee? ☕", de: "Nach dem Essen. Kaffee? ☕", it: "Dopo cena. Caffè? ☕" },
+      options: {
+        en: ["Espresso. Obviously.", "A cappuccino, please.", "Filter coffee, Norwegian size."],
+        de: ["Espresso. Natürlich.", "Einen Cappuccino, bitte.", "Filterkaffee, norwegische Größe."],
+        it: ["Espresso. Ovviamente.", "Un cappuccino, grazie.", "Caffè filtro, formato norvegese."],
+      },
+      nope: {
+        en: "A cappuccino after 11 am? In Italy?",
+        de: "Cappuccino nach 11 Uhr? In Italien?",
+        it: "Un cappuccino dopo le 11? In Italia?",
+      },
+    },
+    {
+      photo: "", emoji: "😒", wrong: [2],
+      text: { en: "What if someone objects? 💍", de: "Und wenn jemand Einspruch erhebt? 💍", it: "E se qualcuno si oppone? 💍" },
+      options: {
+        en: ["I suddenly can't hear.", "I'm guarding the microphone.", "I object. For the plot."],
+        de: ["Ich höre plötzlich nichts mehr.", "Ich bewache das Mikrofon.", "Ich erhebe Einspruch. Für den Plot."],
+        it: ["All'improvviso non sento più niente.", "Faccio la guardia al microfono.", "Mi oppongo. Per la trama."],
+      },
+      nope: { en: "Not this plot.", de: "Nicht in dieser Geschichte.", it: "Non in questa storia." },
+    },
+    {
+      photo: "", emoji: "🥳", wrong: [2],
+      text: { en: "The band plays the last song. You: 💃", de: "Die Band spielt das letzte Lied. Du: 💃", it: "La band suona l'ultima canzone. Tu: 💃" },
+      options: {
+        en: ["Dance until they turn the lights on.", "Start a Schlager singalong.", "Leave early to beat the traffic."],
+        de: ["Tanze, bis das Licht angeht.", "Stimme einen Schlager an.", "Fahre früher, um dem Stau zu entgehen."],
+        it: ["Ballo finché non accendono le luci.", "Attacco un coro di Schlager tedesco.", "Vado via prima per evitare il traffico."],
+      },
+      nope: {
+        en: "There is no traffic. You're in Italy, on holiday.",
+        de: "Es gibt keinen Stau. Du bist in Italien, im Urlaub.",
+        it: "Non c'è traffico. Sei in Italia, in vacanza.",
+      },
+    },
+  ],
+};
+
+// Fixed page texts in each language.
+const UI = {
+  en: {
+    ask: "Want to come to<br>our wedding? 💍",
+    yes: "Yes", no: "No",
+    noCaption: "Wrong button. Try again 😉",
+    noTired: "Okay, I'm tired. Click me if you dare.",
+    noCount: "Nope!",
+    poke: "Hey! Stop poking us. 😄",
+    eggHint: "Psst! This page hides a few secrets: type a toast in one of our languages, poke our photo five times, or try an old video game cheat code. 🥚",
+    skip: "Already passed? Skip to the info",
+    back: "← Back",
+    questionOf: (i, n) => `Question ${i} of ${n}`,
+    wrong: "Wrong answer!", tryAgain: "Try again",
+    passed: "You passed!", invited: "You're invited!", status: "Guest status: confirmed",
+    soon: "Coming soon", where: "Where", attire: "Attire", dress: "Dress code",
+    quizAgain: "Take the quiz again 🎲",
+    sections: {
+      welcome: "Welcome", schedule: "Schedule", place: "The place", travel: "Travel",
+      stay: "Where to stay", rsvp: "RSVP", countries: "Three countries", faq: "Questions & answers",
+    },
+    facts: "Fun facts", phrases: "Say it like a local",
+    form: {
+      name: "Your name", email: "Email", phone: "Phone number", required: "Required",
+      attending: "Will you be there?", yes: "Yes, of course!", no: "Sadly, no",
+      guests: "How many people in total, including you?",
+      party: "Who is coming? (all names, including yours)",
+      dietary: "Allergies or dietary needs",
+      arrival: "When do you plan to arrive?",
+      message: "Anything else we should know?",
+      send: "Send RSVP", sending: "Sending…",
+      thanks: "Thank you! We got your answer. 💌",
+      failed: "That didn't work. Please try again, or just message us.",
+      notConnected: "The RSVP form is not connected yet. Please message us directly for now.",
+    },
+  },
+  de: {
+    ask: "Kommst du zu<br>unserer Hochzeit? 💍",
+    yes: "Ja", no: "Nein",
+    noCaption: "Falscher Knopf. Nochmal 😉",
+    noTired: "Okay, ich bin müde. Klick mich, wenn du dich traust.",
+    noCount: "Nö!",
+    poke: "Hey! Hör auf, uns anzustupsen. 😄",
+    eggHint: "Psst! Diese Seite hat ein paar Geheimnisse: Tippe einen Trinkspruch in einer unserer Sprachen, stups unser Foto fünfmal an oder probier einen alten Videospiel-Cheatcode. 🥚",
+    skip: "Schon bestanden? Direkt zu den Infos",
+    back: "← Zurück",
+    questionOf: (i, n) => `Frage ${i} von ${n}`,
+    wrong: "Falsche Antwort!", tryAgain: "Nochmal versuchen",
+    passed: "Bestanden!", invited: "Du bist eingeladen!", status: "Gaststatus: bestätigt",
+    soon: "Folgt bald", where: "Wo", attire: "Kleidung", dress: "Dresscode",
+    quizAgain: "Quiz nochmal machen 🎲",
+    sections: {
+      welcome: "Willkommen", schedule: "Ablauf", place: "Der Ort", travel: "Anreise",
+      stay: "Unterkunft", rsvp: "Zusage", countries: "Drei Länder", faq: "Fragen & Antworten",
+    },
+    facts: "Wusstest du?", phrases: "Sprich wie die Einheimischen",
+    form: {
+      name: "Dein Name", email: "E-Mail", phone: "Telefonnummer", required: "Pflichtfeld",
+      attending: "Bist du dabei?", yes: "Ja, natürlich!", no: "Leider nein",
+      guests: "Wie viele Personen insgesamt, dich eingeschlossen?",
+      party: "Wer kommt mit? (alle Namen, auch deiner)",
+      dietary: "Allergien oder Essenswünsche",
+      arrival: "Wann willst du anreisen?",
+      message: "Sonst noch etwas?",
+      send: "Zusage senden", sending: "Wird gesendet…",
+      thanks: "Danke! Deine Antwort ist angekommen. 💌",
+      failed: "Das hat nicht geklappt. Bitte nochmal versuchen oder schreib uns einfach.",
+      notConnected: "Das Formular ist noch nicht verbunden. Bitte schreib uns vorerst direkt.",
+    },
+  },
+  it: {
+    ask: "Vuoi venire al<br>nostro matrimonio? 💍",
+    yes: "Sì", no: "No",
+    noCaption: "Pulsante sbagliato. Riprova 😉",
+    noTired: "Ok, sono stanco. Cliccami, se hai il coraggio.",
+    noCount: "Eh no!",
+    poke: "Ehi! Smettila di punzecchiarci. 😄",
+    eggHint: "Psst! Questa pagina nasconde qualche segreto: scrivi un brindisi in una delle nostre lingue, punzecchia la nostra foto cinque volte o prova un vecchio trucco dei videogiochi. 🥚",
+    skip: "Già superato? Vai alle informazioni",
+    back: "← Indietro",
+    questionOf: (i, n) => `Domanda ${i} di ${n}`,
+    wrong: "Risposta sbagliata!", tryAgain: "Riprova",
+    passed: "Superato!", invited: "Sei invitato!", status: "Stato ospite: confermato",
+    soon: "In arrivo", where: "Dove", attire: "Abbigliamento", dress: "Dress code",
+    quizAgain: "Rifai il quiz 🎲",
+    sections: {
+      welcome: "Benvenuti", schedule: "Programma", place: "Il luogo", travel: "Viaggio",
+      stay: "Dove dormire", rsvp: "RSVP", countries: "Tre paesi", faq: "Domande e risposte",
+    },
+    facts: "Curiosità", phrases: "Parla come la gente del posto",
+    form: {
+      name: "Il tuo nome", email: "Email", phone: "Numero di telefono", required: "Obbligatorio",
+      attending: "Ci sarai?", yes: "Sì, certo!", no: "Purtroppo no",
+      guests: "Quante persone in tutto, contando anche te?",
+      party: "Chi viene? (tutti i nomi, compreso il tuo)",
+      dietary: "Allergie o esigenze alimentari",
+      arrival: "Quando pensi di arrivare?",
+      message: "Qualcos'altro che dovremmo sapere?",
+      send: "Invia RSVP", sending: "Invio in corso…",
+      thanks: "Grazie! Abbiamo ricevuto la tua risposta. 💌",
+      failed: "Qualcosa è andato storto. Riprova o scrivici direttamente.",
+      notConnected: "Il modulo RSVP non è ancora attivo. Per ora scrivici direttamente.",
+    },
+  },
+};
+// ----------------------------------------------------------------------------
+
+const LANGS = Object.keys(UI);
+// Each language named in itself, for the picker on the first screen.
+const LANG_NAMES = { en: "English", de: "Deutsch", it: "Italiano" };
+const LANG_KEY = "wedding-lang";
+// Guests who passed (or skipped) once land on the info page next time.
+const SEEN_KEY = "wedding-info-seen";
+
+// The language comes from the guest's earlier choice, then their browser, then English.
+const pickLang = () => {
+  const saved = localStorage.getItem(LANG_KEY);
+  if (LANGS.includes(saved)) return saved;
+  const browser = (navigator.languages || [navigator.language])
+    .map((l) => l.slice(0, 2).toLowerCase())
+    .find((l) => LANGS.includes(l));
+  return browser || "en";
+};
+
+let lang = pickLang();
+let current = "ask";
+
+const tr = (x) => (x && typeof x === "object" && !Array.isArray(x) ? x[lang] ?? x.en : x);
+const ui = () => UI[lang];
+
+const app = document.getElementById("app");
+
+const photo = (src, emoji, cls = "photo") =>
+  src ? `<img class="${cls}" src="${src}" alt="">` : `<div class="${cls}">${emoji}</div>`;
+
+const line = (cls, text) => (text ? `<div class="${cls}">${text}</div>` : "");
+
+// Sections whose content uses the full width (side-by-side columns) instead of a reading column.
+const WIDE_SECTIONS = ["travel", "countries"];
+
+const rsvpForm = () => {
+  const f = ui().form;
+  const deadline = tr(CONFIG.rsvpDeadline);
+  // The asterisk is for the eye only; screen readers get "required" from the input itself.
+  const req = `<span class="req" aria-hidden="true">*</span>`;
+  return `
+    ${deadline ? `<p>${deadline}</p>` : ""}
+    <form class="rsvp" id="rsvp-form">
+      <p class="req-note"><span class="req" aria-hidden="true">*</span> ${f.required}</p>
+      <label><span>${f.name} ${req}</span><input name="name" required autocomplete="name"></label>
+      <label><span>${f.email} ${req}</span><input name="email" type="email" required autocomplete="email"></label>
+      <label>${f.phone}<input name="phone" type="tel" autocomplete="tel"></label>
+      <fieldset>
+        <legend>${f.attending} ${req}</legend>
+        <label class="choice"><input type="radio" name="attending" value="yes" required> ${f.yes}</label>
+        <label class="choice"><input type="radio" name="attending" value="no"> ${f.no}</label>
+      </fieldset>
+      <!-- Only for guests who come; hidden and switched off when they answer "no" -->
+      <div class="if-attending">
+        <label><span>${f.guests} ${req}</span><input name="guests" type="number" min="1" max="20" inputmode="numeric" required></label>
+        <label>${f.party}<textarea name="names" rows="2"></textarea></label>
+        <label>${f.dietary}<input name="dietary"></label>
+        <label>${f.arrival}<input name="arrival" type="date"></label>
+      </div>
+      <label>${f.message}<textarea name="message" rows="3"></textarea></label>
+      <!-- Hidden from people; bots that fill every field get ignored by the script -->
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn" type="submit">${f.send}</button>
+      <p class="form-status" role="status"></p>
+    </form>`;
+};
+
+const countries = () => CONFIG.info.countries.map((c) => `
+  <div class="country">
+    <h3>${c.flag} ${tr(c.name)}</h3>
+    <div class="label">${ui().facts}</div>
+    <ul class="facts">${c.facts.map((f) => `<li>${tr(f)}</li>`).join("")}</ul>
+    <div class="label">${ui().phrases}</div>
+    <dl class="phrases">${c.phrases.map(([p, m]) => `<dt>${p}</dt><dd>${tr(m) === p ? "" : tr(m)}</dd>`).join("")}</dl>
+  </div>`).join("");
+
+const screens = {
+  ask: () => `
+    <div class="card split">
+      <div class="media">${photo(CONFIG.coverPhoto, "💑")}</div>
+      <div class="body">
+        <div class="lang-pick" role="group" aria-label="Language">
+          ${LANGS.map((l) => `<button data-lang="${l}" class="${l === lang ? "on" : ""}">${LANG_NAMES[l]}</button>`).join("")}
+        </div>
+        <h1>${ui().ask}</h1>
+        <div class="yesno">
+          <button class="btn yes" data-go="q0">${ui().yes}</button>
+          <button class="btn ghost no" data-dodge="${CONFIG.noDodges}">${ui().no}</button>
+        </div>
+        <button class="skip" data-go="info">${ui().skip}</button>
+      </div>
+    </div>`,
+
+  question: (i) => {
+    const q = CONFIG.questions[i];
+    const progress = CONFIG.questions.map((_, n) => `<span class="${n <= i ? "on" : ""}"></span>`).join("");
+    return `
+      <div class="card split">
+        <button class="back" data-go="${i === 0 ? "ask" : `q${i - 1}`}">${ui().back}</button>
+        <div class="media">${photo(q.photo, q.emoji)}</div>
+        <div class="body">
+          <div class="eyebrow">${ui().questionOf(i + 1, CONFIG.questions.length)}</div>
+          <div class="progress">${progress}</div>
+          <h2>${tr(q.text)}</h2>
+          <div class="options">
+            ${tr(q.options).map((o, n) => `<button class="option" data-answer="${i}:${n}">${o}</button>`).join("")}
+          </div>
+        </div>
+      </div>`;
+  },
+
+  wrong: (i) => {
+    const nope = tr(CONFIG.questions[i].nope);
+    return `
+      <div class="card split shake">
+        <div class="media">${photo(CONFIG.wrongPhoto, "😑")}</div>
+        <div class="body">
+          <h2>${ui().wrong}</h2>
+          ${nope ? `<p class="nope">${nope}</p>` : ""}
+          <button class="btn" data-go="q${i}">${ui().tryAgain}</button>
+        </div>
+      </div>`;
+  },
+
+  passed: () => `
+    <div class="card passed">
+      <h1>${ui().passed}</h1>
+      <div class="sub">${ui().invited}</div>
+      <span class="badge">${ui().status}</span>
+      <button class="arrow" data-go="info" aria-label="↓">↓</button>
+    </div>`,
+
+  info: () => {
+    const { info } = CONFIG;
+    const u = ui();
+    const soon = `<p class="soon">${u.soon}</p>`;
+    const text = (t) => (tr(t) ? `<p>${tr(t)}</p>` : soon);
+    const sections = [
+      ["welcome", text(info.welcome)],
+      ["schedule", info.schedule.length ? info.schedule.map((e) => `
+        <div class="event">
+          <div class="when">${tr(e.day)} · ${tr(e.time)}</div>
+          <h3>${tr(e.title)}</h3>
+          ${line("", tr(e.text))}
+          ${line("meta", tr(e.where) && `${u.where}: ${tr(e.where)}`)}
+          ${line("meta", tr(e.attire) && `${u.attire}: ${tr(e.attire)}`)}
+        </div>`).join("") : soon],
+      ["place", text(info.place)],
+      ["travel", `<div class="travel">${info.travel.map((t) => `<div><h3>${tr(t.from)}</h3>${text(t.text)}</div>`).join("")}</div>`],
+      ["stay", info.stay.length ? info.stay.map((h) => `
+        <div class="event">
+          <h3>${h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${tr(h.name)}</a>` : tr(h.name)}</h3>
+          ${line("", tr(h.text))}
+        </div>`).join("") : soon],
+      ["rsvp", rsvpForm()],
+      ["countries", `<div class="countries">${countries()}</div>`],
+      ["faq", info.faq.map((f) => `
+        <details><summary>${tr(f.q)}</summary>${text(f.a)}</details>`).join("")],
+    ];
+    return `
+      <div class="info-page">
+        <div class="card invite split">
+          <div class="media">
+            ${CONFIG.invitePhoto ? `<img class="big-photo" src="${CONFIG.invitePhoto}" alt="">` : ""}
+          </div>
+          <div class="body">
+            <h1 class="names">${CONFIG.couple}</h1>
+            <div class="date">${tr(CONFIG.date)}</div>
+            ${line("small", tr(CONFIG.time))}
+            ${line("venue", tr(CONFIG.venue))}
+            ${line("small", tr(CONFIG.city))}
+            ${line("small", tr(CONFIG.dressCode) && `${u.dress}: ${tr(CONFIG.dressCode)}`)}
+            ${line("note", tr(CONFIG.note))}
+            <button class="skip" data-go="ask">${u.quizAgain}</button>
+          </div>
+        </div>
+        <nav class="info-nav">
+          ${sections.map(([id]) => `<a href="#${id}">${u.sections[id]}</a>`).join("")}
+        </nav>
+        ${sections.map(([id, body]) => `
+          <section class="info-section${WIDE_SECTIONS.includes(id) ? " is-wide" : ""}" id="${id}">
+            <h2>${u.sections[id]}</h2>
+            <div>${body}</div>
+          </section>`).join("")}
+        <button class="skip" data-go="ask">${u.quizAgain}</button>
+      </div>`;
+  },
+};
+
+// Route names: "ask", "q0".."qN", "wrong0".."wrongN", "passed", "info"
+const render = (route, { keepScroll = false } = {}) => {
+  const [, kind, idx] = route.match(/^([a-z]+?)(\d*)$/);
+  const view = {
+    ask: screens.ask,
+    q: () => screens.question(+idx),
+    wrong: () => screens.wrong(+idx),
+    passed: screens.passed,
+    info: screens.info,
+  }[kind];
+  current = route;
+  document.body.classList.toggle("on-info", kind === "info");
+  document.body.classList.toggle("on-ask", kind === "ask");
+  app.innerHTML = view();
+  if (!keepScroll) window.scrollTo(0, 0);
+  if (route === "passed") confetti();
+  if (route === "passed" || route === "info") localStorage.setItem(SEEN_KEY, "1");
+};
+
+const renderChrome = () => {
+  document.documentElement.lang = lang;
+  document.getElementById("mono").textContent = CONFIG.couple;
+  document.getElementById("where").textContent = [tr(CONFIG.city), tr(CONFIG.date)].filter(Boolean).join(", ");
+  document.getElementById("egg-hint").textContent = ui().eggHint;
+  document.getElementById("langs").innerHTML = LANGS
+    .map((l) => `<button data-lang="${l}" class="${l === lang ? "on" : ""}">${l.toUpperCase()}</button>`)
+    .join("");
+};
+
+const setLang = (l) => {
+  lang = l;
+  localStorage.setItem(LANG_KEY, l);
+  renderChrome();
+  render(current, { keepScroll: true });
+};
+
+const nextAfter = (i) => (i + 1 < CONFIG.questions.length ? `q${i + 1}` : "passed");
+
+// The "No" button runs away from the cursor (and from taps on phones) a few
+// times, then gives up and plays the video when clicked.
+// It jumps anywhere inside the card, but only to spots that keep a gap to "Yes"
+// and away from where it was, so it never hides behind "Yes" or lands under
+// the cursor. (Inside the small Yes/No strip alone no such spot exists.)
+const GAP = 12;
+const EDGE = 14;
+
+const overlaps = (a, b) =>
+  a.left < b.right + GAP && a.right > b.left - GAP &&
+  a.top < b.bottom + GAP && a.bottom > b.top - GAP;
+
+const randomSpot = (box, w, h) => {
+  const left = EDGE + Math.random() * (box.width - w - 2 * EDGE);
+  const top = EDGE + Math.random() * (box.height - h - 2 * EDGE);
+  return { left, top, right: left + w, bottom: top + h };
+};
+
+const dodgesLeft = (btn) => Number(btn.dataset.dodge) || 0;
+
+const dodge = (btn) => {
+  const card = btn.closest(".card");
+  const box = card.getBoundingClientRect();
+  const relative = (r) => ({
+    left: r.left - box.left, right: r.right - box.left,
+    top: r.top - box.top, bottom: r.bottom - box.top,
+  });
+  const now = relative(btn.getBoundingClientRect());
+  // Keep clear of the other buttons ("Yes", the skip link, the language picker) and of the current spot.
+  const blocked = [...card.querySelectorAll(".yes, .skip, .lang-pick")]
+    .map((el) => relative(el.getBoundingClientRect()))
+    .concat([now]);
+  const candidates = Array.from({ length: 200 }, () => randomSpot(box, btn.offsetWidth, btn.offsetHeight));
+  const spot = candidates.find((s) => blocked.every((b) => !overlaps(s, b)));
+  if (!spot) return;
+  // First jump: lift the button out of the Yes/No strip so it can roam the card.
+  if (btn.parentElement !== card) {
+    btn.style.left = `${now.left}px`;
+    btn.style.top = `${now.top}px`;
+    btn.classList.add("loose");
+    card.appendChild(btn);
+    btn.getBoundingClientRect(); // apply the start position before moving, so it slides
+  }
+  btn.style.left = `${spot.left}px`;
+  btn.style.top = `${spot.top}px`;
+  btn.dataset.dodge = dodgesLeft(btn) - 1;
+  // Count the escapes, so people on phones see their taps are doing something.
+  const total = CONFIG.noDodges;
+  const count = `${total - dodgesLeft(btn)}/${total}`;
+  toast(dodgesLeft(btn) === 0 ? `${count}. ${ui().noTired}` : `${ui().noCount} ${count}`);
+};
+
+const toast = (text) => {
+  document.querySelector(".toast")?.remove();
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+};
+
+// On a computer "No" runs only after the cursor has rested on it for
+// CONFIG.noDelay, so a quick click still hits. Phones have no hover, so
+// there a tap makes it run instead.
+let dodgeTimer = null;
+let lastPointer = "mouse";
+
+const cancelDodge = () => {
+  clearTimeout(dodgeTimer);
+  dodgeTimer = null;
+};
+
+const armDodge = (btn) => {
+  if (dodgeTimer || dodgesLeft(btn) === 0) return;
+  dodgeTimer = setTimeout(() => {
+    dodgeTimer = null;
+    if (btn.isConnected) dodge(btn);
+  }, CONFIG.noDelay);
+};
+
+const pressNo = (btn) => {
+  cancelDodge();
+  if (lastPointer === "touch" && dodgesLeft(btn) > 0) return dodge(btn);
+  showVideo();
+};
+
+const closeVideo = () => {
+  document.querySelector(".video-modal")?.remove();
+  render("ask");
+};
+
+const showVideo = () => {
+  const modal = document.createElement("div");
+  modal.className = "video-modal";
+  modal.innerHTML = `
+    <div class="video-box">
+      <button class="video-close" aria-label="Close">×</button>
+      <video src="${CONFIG.noVideo}" autoplay playsinline controls></video>
+      <p>${ui().noCaption}</p>
+    </div>`;
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal || e.target.closest(".video-close")) closeVideo();
+  });
+  document.body.appendChild(modal);
+  // Called inside the click, so browsers allow sound. If one still refuses,
+  // the controls stay visible for a manual play.
+  modal.querySelector("video").play().catch(() => {});
+};
+
+const confetti = (colors = ["#1f3c88", "#f2c14e", "#6b7a4b", "#d0342c", "#009246"], count = 300) => {
+  Array.from({ length: count }, () => {
+    const c = document.createElement("div");
+    const size = 6 + Math.random() * 8;
+    c.className = "confetti";
+    c.style.left = `${Math.random() * 100}vw`;
+    c.style.width = `${size}px`;
+    c.style.height = `${size * (0.6 + Math.random())}px`;
+    c.style.borderRadius = Math.random() < 0.3 ? "50%" : "1px"; // some dots among the strips
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = `${2.5 + Math.random() * 3}s`;
+    c.style.animationDelay = `${Math.random() * 1.5}s`; // spread out, so it rains for a while
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 7500);
+  });
+};
+
+// Apps Script web apps don't send CORS headers, so the request goes out in
+// "no-cors" mode: it arrives, but the page can't read the reply. Only a
+// network failure counts as an error.
+const sendRsvp = async (form) => {
+  const f = ui().form;
+  const status = form.querySelector(".form-status");
+  const button = form.querySelector("button[type=submit]");
+  if (!CONFIG.rsvpUrl) {
+    status.textContent = f.notConnected;
+    return;
+  }
+  button.disabled = true;
+  button.textContent = f.sending;
+  const data = new URLSearchParams(new FormData(form));
+  data.set("lang", lang);
+  try {
+    await fetch(CONFIG.rsvpUrl, { method: "POST", mode: "no-cors", body: data });
+    form.innerHTML = `<p class="thanks">${f.thanks}</p>`;
+    confetti();
+  } catch {
+    status.textContent = f.failed;
+    button.disabled = false;
+    button.textContent = f.send;
+  }
+};
+
+app.addEventListener("click", (e) => {
+  const el = e.target.closest("button");
+  if (!el) return;
+  if (el.dataset.dodge !== undefined) return pressNo(el);
+  if (el.dataset.lang) return setLang(el.dataset.lang);
+  if (el.dataset.go) return render(el.dataset.go);
+  if (el.dataset.answer) {
+    const [i, n] = el.dataset.answer.split(":").map(Number);
+    render(CONFIG.questions[i].wrong.includes(n) ? `wrong${i}` : nextAfter(i));
+  }
+});
+app.addEventListener("mouseover", (e) => {
+  const no = e.target.closest("[data-dodge]");
+  if (no) armDodge(no);
+});
+app.addEventListener("mouseout", (e) => {
+  if (e.target.closest("[data-dodge]")) cancelDodge();
+});
+app.addEventListener("pointerdown", (e) => {
+  lastPointer = e.pointerType;
+});
+// "Sadly, no" hides the fields that only matter for guests who come. Disabled
+// fields are neither required nor sent.
+app.addEventListener("change", (e) => {
+  if (e.target.name !== "attending") return;
+  const block = e.target.form.querySelector(".if-attending");
+  const coming = e.target.value === "yes";
+  block.hidden = !coming;
+  block.querySelectorAll("input, textarea").forEach((el) => { el.disabled = !coming; });
+});
+app.addEventListener("submit", (e) => {
+  e.preventDefault();
+  sendRsvp(e.target);
+});
+document.getElementById("langs").addEventListener("click", (e) => {
+  const l = e.target.closest("[data-lang]")?.dataset.lang;
+  if (l) setLang(l);
+});
+
+// ---- Easter eggs -------------------------------------------------------------
+const FLAG_COLORS = {
+  de: ["#000000", "#dd0000", "#ffce00"],
+  it: ["#009246", "#ffffff", "#ce2b37"],
+  no: ["#ba0c2f", "#ffffff", "#00205b"],
+};
+
+// Typing a toast anywhere (outside form fields) raises a glass in that country's colors.
+const TOASTS = [
+  { words: ["prost"], text: "Prost! 🍺", colors: FLAG_COLORS.de },
+  { words: ["cincin"], text: "Cin cin! 🥂", colors: FLAG_COLORS.it },
+  { words: ["skål", "skal"], text: "Skål! 🥂", colors: FLAG_COLORS.no },
+];
+const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+let typed = "";
+let keys = [];
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest?.("input, textarea, select")) return;
+  keys = [...keys, e.key].slice(-KONAMI.length);
+  if (KONAMI.every((k, i) => keys[i]?.toLowerCase() === k.toLowerCase())) {
+    keys = [];
+    confetti(Object.values(FLAG_COLORS).flat(), 600);
+    return toast("🇩🇪 🇮🇹 🇳🇴");
+  }
+  if (e.key.length !== 1 || e.key === " ") return;
+  typed = (typed + e.key.toLowerCase()).slice(-12);
+  const hit = TOASTS.find((t) => t.words.some((w) => typed.endsWith(w)));
+  if (!hit) return;
+  typed = "";
+  confetti(hit.colors, 200);
+  toast(hit.text);
+});
+
+// Poking the photo of the two of you 5 times shows Fede's skeptical face for a moment.
+const POKES_NEEDED = 5;
+let pokes = 0;
+
+app.addEventListener("click", (e) => {
+  const img = e.target.closest("img.photo, img.big-photo");
+  if (!img || img.src.includes(CONFIG.wrongPhoto)) return;
+  pokes += 1;
+  if (pokes < POKES_NEEDED) return;
+  pokes = 0;
+  const original = img.src;
+  img.src = CONFIG.wrongPhoto;
+  toast(ui().poke);
+  setTimeout(() => { if (img.isConnected) img.src = original; }, 1800);
+});
+
+console.log(
+  "%cCiao, curious guest! 👋%c\nYou found the back room. Try typing prost, cin cin or skål on the page, or the Konami code.",
+  "font: 600 16px Georgia, serif; color: #1f3c88",
+  "font: 13px sans-serif; color: #5d6474",
+);
+// -----------------------------------------------------------------------------
+
+// A link ending in #info (or any section, like #travel) opens the info page directly.
+const startRoute = () => {
+  const target = location.hash.slice(1);
+  if (target && target !== "info") return { route: "info", scrollTo: target };
+  if (target === "info" || localStorage.getItem(SEEN_KEY)) return { route: "info" };
+  return { route: "ask" };
+};
+
+renderChrome();
+const { route, scrollTo } = startRoute();
+render(route);
+if (scrollTo) document.getElementById(scrollTo)?.scrollIntoView();
+</script>
+</body>
+</html>
