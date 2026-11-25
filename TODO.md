@@ -17,9 +17,10 @@
 - [ ] Dress code wording: "Semi-formal" (German) and "Semi-formale" (Italian) OK?
 
 ## RSVP
-- [ ] Apps Script: Project Settings > Script Properties > add `NOTIFY_EMAILS` with both addresses, comma-separated
-- [ ] Paste the new `rsvp-apps-script.gs`, then Deploy > Manage deployments > Edit > New version
-- [ ] Send a test RSVP; both addresses get the mail
+- [x] Apps Script: Project Settings > Script Properties > add `NOTIFY_EMAILS` with both addresses, comma-separated
+- [x] Paste the new `rsvp-apps-script.gs`, then Deploy > Manage deployments > Edit > New version
+- [x] Send a test RSVP; both addresses get the mail
+- [x] Archive the unused second deployment "no mail in script"
 - [ ] In the Sheet: rename header `party` to `names`, delete the test rows
 - [ ] Optional: rate limit in the script against floods
 
